@@ -6,6 +6,7 @@ import (
 
 // predicatesImpl contains the common implementation of AnyPredicates and AllPredicates.
 func predicatesImpl(value interface{}, wantedAnswer bool, predicates interface{}) bool {
+
 	if !IsCollection(predicates) {
 		panic("Predicates parameter must be an iteratee")
 	}

@@ -9,42 +9,49 @@ import (
 // Filter iterates over elements of collection, returning an array of
 // all elements predicate returns truthy for.
 func Filter(arr interface{}, predicate interface{}) interface{} {
+	// 检查 arr 是否可迭代
 	if !IsIteratee(arr) {
 		panic("First parameter must be an iteratee")
 	}
 
+	// 检查 predicate 是否是函数，且出/入参数目分别为 1/1
 	if !IsFunction(predicate, 1, 1) {
 		panic("Second argument must be function")
 	}
 
+	// 函数类型
 	funcValue := reflect.ValueOf(predicate)
-
 	funcType := funcValue.Type()
 
+	// 检查函数出参类型是否为 bool
 	if funcType.Out(0).Kind() != reflect.Bool {
 		panic("Return argument should be a boolean")
 	}
 
 	arrValue := reflect.ValueOf(arr)
-
 	arrType := arrValue.Type()
 
 	// Get slice type corresponding to array type
+	// 数组类型
 	resultSliceType := reflect.SliceOf(arrType.Elem())
 
 	// MakeSlice takes a slice kind type, and makes a slice.
+	// 构造返回数组
 	resultSlice := reflect.MakeSlice(resultSliceType, 0, 0)
 
+	// 遍历 arr
 	for i := 0; i < arrValue.Len(); i++ {
+		// 取 arr[i]
 		elem := arrValue.Index(i)
-
+		// 执行 predicate(arr[i])
 		result := funcValue.Call([]reflect.Value{elem})[0].Interface().(bool)
-
+		// 如果返回 true 就 append 到 result 中
 		if result {
 			resultSlice = reflect.Append(resultSlice, elem)
 		}
 	}
 
+	// 返回结果数组
 	return resultSlice.Interface()
 }
 
@@ -55,24 +62,27 @@ func Find(arr interface{}, predicate interface{}) interface{} {
 	return val
 }
 
-// Find iterates over elements of collection, returning the first
+// FindKey iterates over elements of collection, returning the first
 // element of an array and random of a map which predicate returns truthy for.
 func FindKey(arr interface{}, predicate interface{}) (matchKey, matchEle interface{}) {
+	// 检查 arr 是否可迭代
 	if !IsIteratee(arr) {
 		panic("First parameter must be an iteratee")
 	}
-
+	// 检查 predicate 是否是函数，且出/入参数目分别为 1/1
 	if !IsFunction(predicate, 1, 1) {
 		panic("Second argument must be function")
 	}
 
+	// 函数类型
 	funcValue := reflect.ValueOf(predicate)
-
 	funcType := funcValue.Type()
 
+	// 检查函数出参类型是否为 bool
 	if funcType.Out(0).Kind() != reflect.Bool {
 		panic("Return argument should be a boolean")
 	}
+
 
 	arrValue := reflect.ValueOf(arr)
 	var keyArrs []reflect.Value
@@ -81,6 +91,7 @@ func FindKey(arr interface{}, predicate interface{}) (matchKey, matchEle interfa
 	if isMap {
 		keyArrs = arrValue.MapKeys()
 	}
+
 	for i := 0; i < arrValue.Len(); i++ {
 		var (
 			elem reflect.Value
@@ -94,8 +105,8 @@ func FindKey(arr interface{}, predicate interface{}) (matchKey, matchEle interfa
 			elem = arrValue.Index(i)
 		}
 
+		// 执行 predicate(arr[i]) 返回 true/false
 		result := funcValue.Call([]reflect.Value{elem})[0].Interface().(bool)
-
 		if result {
 			return key.Interface(), elem.Interface()
 		}

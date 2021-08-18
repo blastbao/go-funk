@@ -75,16 +75,20 @@ func PtrOf(itf interface{}) interface{} {
 func IsFunction(in interface{}, num ...int) bool {
 	funcType := reflect.TypeOf(in)
 
+	// 是否为 func 类型
 	result := funcType != nil && funcType.Kind() == reflect.Func
 
+	// 入参数目是否匹配
 	if len(num) >= 1 {
 		result = result && funcType.NumIn() == num[0]
 	}
 
+	// 出参数目是否匹配
 	if len(num) == 2 {
 		result = result && funcType.NumOut() == num[1]
 	}
 
+	// 是否为 func 类型且出/入参数数目匹配
 	return result
 }
 
